@@ -1,14 +1,16 @@
-import { Body, Controller, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { UserService } from './user.service';
-import { RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
+import { GetUserResponse, RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
-import { LocalGuard } from './guards/local.guards';
+import { LocalGuard } from './guards/local.guard';
+import { Request } from 'express';
+import { JwtAuthGuard } from './guards/jwt.guard';
 
 @Controller('/api/user')
 export class UserController {
-    constructor(@Inject(WINSTON_MODULE_PROVIDER) logger: Logger, private userService: UserService) {}
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private logger: Logger, private userService: UserService) {}
 
     @Post()
     @HttpCode(201)
@@ -23,12 +25,14 @@ export class UserController {
     @Post('/login') // method POST in /login url
     @UseGuards(LocalGuard) // Guard will be carried out at the start
     @HttpCode(202) // return httpcode if succeed
-    async login(
-        @Body() {username, password}: RegisterUserRequest // request body, we will take username & password in an object
-    ): Promise<WebResponse<any>> {
-        // Validate user will be run here, with {username, password} as argument
-        const result = await this.userService.validateUser({username, password})
-        return {data: result} // return data, or null
+    async login(@Req() req: Request): Promise<WebResponse<any>> {
+        return { data: req.user }
     }
 
+    @Get('/profile')
+    @UseGuards(JwtAuthGuard)
+    async profile(@Req() req: Request) {
+        this.logger.info('Inside AuthController status method')
+        this.logger.info(req.user)
+    }
 }
