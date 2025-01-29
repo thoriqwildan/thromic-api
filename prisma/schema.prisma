@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  username          String          @id         @db.VarChar(100)
+  name              String          @db.VarChar(100)
+  email             String          @unique     @db.VarChar(100)
+  password          String          @db.VarChar(100)
+  imgUrl            String          @default("http://localhost/uploads/profiles/index.png")  @db.VarChar(255)
+  role              Role            @default(USER)
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+
+  bookmarks       Bookmarks[]
+
+  @@map("users")
+}
+
+model Authors {
+  author_name       String          @id         @db.VarChar(50)
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+
+  series            Series[]
+
+  @@map("authors")
+}
+
+model Genres {
+  genre_name        String          @id         @db.VarChar(50)
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+
+  series            Series[]
+
+  @@map("genres")
+}
+
+model Artists {
+  artist_name       String          @id         @db.VarChar(50)
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+
+  series            Series[]
+
+  @@map("artists")
+}
+
+enum Types {
+  MANHWA
+  MANGA
+  MANHUA
+}
+
+model Series {
+  id                Int             @id         @default(autoincrement())
+  series_name       String          @db.VarChar(100)
+  cover_img         String          @default("http://localhost/uploads/cover/index.png")  @db.VarChar(255)
+  description       String
+  release           String          @db.VarChar(100)
+  author_name       String          @db.VarChar(50)
+  artist_name       String          @db.VarChar(50)
+  genre_name        String          @db.VarChar(50)
+  type              Types           @default(MANHWA)
+
+  author            Authors         @relation(fields: [author_name], references: [author_name])
+  artist            Artists         @relation(fields: [artist_name], references: [artist_name])
+  genre             Genres          @relation(fields: [genre_name], references: [genre_name])
+
+  chapters          Chapters[]
+  bookmarks         Bookmarks[]
+
+  @@map("series")
+}
+
+model Chapters {
+  id                Int             @id           @default(autoincrement())
+  chapter           String          @db.VarChar(100)
+  imgUrl            String          
+  series_id         Int
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+
+  series            Series          @relation(fields: [series_id], references: [id])
+
+  @@map("chapters")
+}
+
+model Bookmarks {
+  username          String          @db.VarChar(100)
+  series_id         Int
+  marked_at         DateTime        @default(now())
+
+  user              User            @relation(fields: [username], references: [username])
+  series            Series          @relation(fields: [series_id], references: [id])
+
+  @@id([username, series_id])
+  @@map("bookmarks")
+}
