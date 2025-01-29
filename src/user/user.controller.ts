@@ -7,6 +7,7 @@ import { WebResponse } from 'src/model/web.model';
 import { LocalGuard } from './guards/local.guard';
 import { Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { date } from 'zod';
 
 @Controller('/api/user')
 export class UserController {
@@ -27,12 +28,14 @@ export class UserController {
     @HttpCode(202) // return httpcode if succeed
     async login(@Req() req: Request): Promise<WebResponse<any>> {
         return { data: req.user }
-    }
+    }   
 
     @Get('/profile')
     @UseGuards(JwtAuthGuard)
-    async profile(@Req() req: Request) {
-        this.logger.info('Inside AuthController status method')
-        this.logger.info(req.user)
+    async profile(@Req() req: Request): Promise<WebResponse<GetUserResponse>> {
+        const result = await this.userService.get(req)
+        return {
+            data: result
+        }
     }
 }

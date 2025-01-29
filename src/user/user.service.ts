@@ -2,12 +2,12 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { LoginUserRequest, RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
+import { GetUserResponse, LoginUserRequest, RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
 import { Logger } from 'winston';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -65,6 +65,20 @@ export class UserService {
         const accessToken = this.jwtService.sign(payload) // Sign JWT token
 
         return accessToken // returning access token
+    }
+
+    async get(req: Request): Promise<GetUserResponse> {
+        const user = await this.prismaService.user.findFirst({
+            where: {
+                username: req.user!['username']
+            }
+        })
+        return {
+            username: user?.username!,
+            name: user?.name!,
+            email: user?.email!,
+            imgUrl: user?.imgUrl!
+        }
     }
 
 }

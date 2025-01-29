@@ -17,6 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         //and in it there is a validate User which will determine the next authentication
         const user = await this.userService.validateUser({username, password})
         if (!user) { throw new UnauthorizedException() }
-        return user
+        const result = { "message": "Login Successfully", "access_token": user }
+        return result
     }
 } 
