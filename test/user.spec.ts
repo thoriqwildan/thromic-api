@@ -83,7 +83,7 @@ describe('User Controller', () => {
 
       logger.info(response.body);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
       expect(response.body.errors).toBeDefined();
     });
 
@@ -99,6 +99,47 @@ describe('User Controller', () => {
       
       expect(response.status).toBe(202)
       expect(response.body.data).toBeDefined()
+    });
+  });
+
+  // Get
+  describe('GET /api/user/profile', () => {
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    });
+
+    it('should be rejected if request is invalid', async () => {
+      const getresponse = await request(app.getHttpServer())
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer salah`)
+
+      logger.info(getresponse.body);
+
+      expect(getresponse.status).toBe(401);
+      expect(getresponse.body.errors).toBeDefined()
+    });
+
+    it('should be able to get user', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/user/login')
+        .send({
+          username: 'test',
+          password: 'test',
+        });
+      
+      const getresponse = await request(app.getHttpServer())
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer ${response.body.data.access_token}`)
+
+      logger.info(response.body.data.access_token)
+      logger.info(getresponse.body);
+
+      expect(getresponse.status).toBe(200);
+      expect(getresponse.body.data.username).toBe('test');
+      expect(getresponse.body.data.name).toBe('test');
+      expect(getresponse.body.data.email).toBe('test@example.com');
+      expect(getresponse.body.data.imgUrl).toBeDefined();
     });
   });
 });

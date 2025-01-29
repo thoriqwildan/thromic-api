@@ -50,7 +50,7 @@ export class UserService {
         // Request Validation using Validation Service and User Validation
         const loginRequest: LoginUserRequest = this.validationService.validate(UserValidation.LOGIN, {username, password})
 
-        const user = await this.prismaService.user.findUnique({ // Check the database, user must exist
+        const user = await this.prismaService.user.findFirst({ // Check the database, user must exist
             where: {
                 username: loginRequest.username
             }
@@ -61,6 +61,8 @@ export class UserService {
         const checkPassword = await bcrypt.compare(loginRequest.password, user.password)
         if (!checkPassword) { return null } // if password wrong, validate user will return null
 
+        this.logger.debug(`User information (${JSON.stringify(user)})`)
+
         const payload = { sub: user.username, email: user.email, role: user.role } // preparation token data
         const accessToken = this.jwtService.sign(payload) // Sign JWT token
 
@@ -70,9 +72,12 @@ export class UserService {
     async get(req: Request): Promise<GetUserResponse> {
         const user = await this.prismaService.user.findFirst({
             where: {
-                username: req.user!['username']
+                username: req.user!['sub']
             }
         })
+
+        this.logger.debug(`User get data (${JSON.stringify(req.user)})`)
+
         return {
             username: user?.username!,
             name: user?.name!,
