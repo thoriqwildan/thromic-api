@@ -2,9 +2,8 @@ import { Body, Controller, Delete, Get, HttpCode, Inject, Patch, Post, Put, Req,
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { UserService } from './user.service';
-import { GetUserResponse, RegisterUserRequest, RegisterUserResponse, UpdateUserRequest } from 'src/model/user.model';
+import { GetUserResponse, LoginUserRequest, RegisterUserRequest, RegisterUserResponse, UpdateUserRequest } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
-import { LocalGuard } from './guards/local.guard';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { date } from 'zod';
@@ -26,14 +25,14 @@ export class UserController {
     }
 
     @Post('/login') // method POST in /login url
-    @UseGuards(LocalGuard) // Guard will be carried out at the start
     @HttpCode(202) // return httpcode if succeed
-    async login(@Req() req: Request, @Res() res: Response) {
+    async login(@Body() req: LoginUserRequest, @Res() res: Response) {
+        const result = await this.userService.validateUser(req)
         this.logger.debug('Udah sampe login')
-        res.cookie('access_token', req.user, {
+        res.cookie('access_token', result, {
             maxAge: 1000 * 60 * 60 * 24,
         })
-        return res.json({data: {'message': 'Login Successfully'}})
+        return res.json({data: 'Login Successfully'})
     }   
 
     @Get('/profile')

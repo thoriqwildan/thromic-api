@@ -55,11 +55,11 @@ export class UserService {
                 username: loginRequest.username
             }
         })
-        if (!user) { return null } // if user doesn't exist, validate user will return null
+        if (!user) { throw new HttpException('Username or Password is wrong', 401) } // if user doesn't exist, validate user will return null
 
         // Compare the password with the database password
         const checkPassword = await bcrypt.compare(loginRequest.password, user.password)
-        if (!checkPassword) { return null } // if password wrong, validate user will return null
+        if (!checkPassword) { throw new HttpException('Username or Password is wrong', 401) } // if password wrong, validate user will return null
 
         const payload = { sub: user.username, email: user.email, role: user.role } // preparation token data
         const accessToken = this.jwtService.sign(payload) // Sign JWT token
