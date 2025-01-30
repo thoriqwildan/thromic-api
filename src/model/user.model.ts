@@ -22,3 +22,8 @@ export class GetUserResponse {
     email: string
     imgUrl: string
 }
+
+export class UpdateUserRequest {
+    name: string
+    password: string
+}

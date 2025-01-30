@@ -2,7 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { GetUserResponse, LoginUserRequest, RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
+import { GetUserResponse, LoginUserRequest, RegisterUserRequest, RegisterUserResponse, UpdateUserRequest } from 'src/model/user.model';
 import { Logger } from 'winston';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt'
@@ -61,10 +61,10 @@ export class UserService {
         const checkPassword = await bcrypt.compare(loginRequest.password, user.password)
         if (!checkPassword) { return null } // if password wrong, validate user will return null
 
-        this.logger.debug(`User information (${JSON.stringify(user)})`)
-
         const payload = { sub: user.username, email: user.email, role: user.role } // preparation token data
         const accessToken = this.jwtService.sign(payload) // Sign JWT token
+
+
 
         return accessToken // returning access token
     }
@@ -76,13 +76,28 @@ export class UserService {
             }
         })
 
-        this.logger.debug(`User get data (${JSON.stringify(req.user)})`)
-
         return {
             username: user?.username!,
             name: user?.name!,
             email: user?.email!,
             imgUrl: user?.imgUrl!
+        }
+    }
+
+    async put(req: Request): Promise<GetUserResponse> {
+        const user = await this.prismaService.user.update({
+            where: { username: req.user!['sub']},
+            data: {
+                name: req.body.name,
+                password: await bcrypt.hash(req.body.password, 10)
+            }
+        })
+
+        return {
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            imgUrl: user.imgUrl
         }
     }
 

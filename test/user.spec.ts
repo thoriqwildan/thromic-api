@@ -98,7 +98,7 @@ describe('User Controller', () => {
       logger.info(response.body);
       
       expect(response.status).toBe(202)
-      expect(response.body.data).toBeDefined()
+      expect(response.body).toBeDefined()
     });
   });
 

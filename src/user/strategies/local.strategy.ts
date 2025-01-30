@@ -18,6 +18,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         const user = await this.userService.validateUser({username, password})
         if (!user) { throw new UnauthorizedException() }
         const result = { "message": "Login Successfully", "access_token": user }
-        return result
+        return user
     }
 } 
