@@ -69,7 +69,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
-            destination: './uploads/profile',
+            destination: './uploads/profiles',
             filename(req, file, callback) {
                 const user = req.user
                 if (!user || !user['sub']) {
@@ -81,7 +81,7 @@ export class UserController {
                 const filename = `${user['sub']}-${date}${extension}`
 
                 // Delete file
-                const directoryPath = './uploads/profile'
+                const directoryPath = './uploads/profiles'
 
                 try {
                 const files = fs.readdirSync(directoryPath)
@@ -116,7 +116,7 @@ export class UserController {
         if (!file) { throw new HttpException('No file uploaded', 404) }
 
         const username = req.user!['sub']
-        const filePath = `/uploads/profile/${file.filename}`
+        const filePath = `/uploads/profiles/${file.filename}`
 
         await this.userService.uploadImage(username, filePath)
 

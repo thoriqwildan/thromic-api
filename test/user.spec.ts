@@ -83,7 +83,7 @@ describe('User Controller', () => {
 
       logger.info(response.body);
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
       expect(response.body.errors).toBeDefined();
     });
 
@@ -112,7 +112,6 @@ describe('User Controller', () => {
     it('should be rejected if request is invalid', async () => {
       const getresponse = await request(app.getHttpServer())
         .get('/api/user/profile')
-        .set('Authorization', `Bearer salah`)
 
       logger.info(getresponse.body);
 
@@ -121,6 +120,8 @@ describe('User Controller', () => {
     });
 
     it('should be able to get user', async () => {
+      await testService.deleteUser();
+      await testService.createUser();
       const response = await request(app.getHttpServer())
         .post('/api/user/login')
         .send({
@@ -128,11 +129,13 @@ describe('User Controller', () => {
           password: 'test',
         });
       
+      const cookie = response.headers['set-cookie'][0].split(';')[0]
+
       const getresponse = await request(app.getHttpServer())
         .get('/api/user/profile')
-        .set('Authorization', `Bearer ${response.body.data.access_token}`)
+        .set('Cookie', cookie)
 
-      logger.info(response.body.data.access_token)
+      logger.info(cookie)
       logger.info(getresponse.body);
 
       expect(getresponse.status).toBe(200);

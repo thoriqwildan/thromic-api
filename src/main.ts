@@ -10,7 +10,7 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER))
   app.use(cookieParser())
 
-  app.use('/uploads/profile', express.static('uploads/profile'))
+  app.use('/uploads/profiles', express.static('uploads/profiles'))
 
   await app.listen(process.env.PORT ?? 3000);
 }
