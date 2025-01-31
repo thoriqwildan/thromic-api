@@ -8,6 +8,8 @@ import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import { promises } from 'fs';
+import * as path from 'path'
 
 @Injectable()
 export class UserService {
@@ -101,4 +103,23 @@ export class UserService {
         }
     }
 
+    async uploadImage(username: string, pathFile: string) {
+        await this.prismaService.user.update({
+            where: { username: username },
+            data: { imgUrl: pathFile }
+        })
+    }
+
+    async deleteOldFileIfExists(username: string): Promise<void> {
+        const uploadDir = './uploads/profile';
+        const files = await promises.readdir(uploadDir);
+        
+        // Cari file yang sesuai dengan pola username
+        const oldFile = files.find(file => file.startsWith(username));
+        
+        if (oldFile) {
+          await promises.unlink(path.join(uploadDir, oldFile)); // Hapus file lama
+        this.logger.debug(`Deleted old file: ${oldFile}`);
+        }
+      }
 }
