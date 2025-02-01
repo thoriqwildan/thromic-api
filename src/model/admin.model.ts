@@ -12,3 +12,18 @@ export class UpdateGenreRequest {
     id: number
     name: string
 }
+
+export class ArtistResponse {
+    id: number
+    name: string
+    created_at: Date
+}
+
+export class ArtistRequest {
+    name: string
+}
+
+export class UpdateArtistRequest {
+    id: number
+    name: string
+}

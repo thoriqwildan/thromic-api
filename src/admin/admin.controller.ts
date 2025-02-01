@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { Roles } from 'src/common/roles.decorator';
-import { GenreRequest, GenresResponse, UpdateGenreRequest } from 'src/model/admin.model';
+import { ArtistRequest, ArtistResponse, GenreRequest, GenresResponse, UpdateArtistRequest, UpdateGenreRequest } from 'src/model/admin.model';
 import { WebResponse } from 'src/model/web.model';
 import { AdminService } from './admin.service';
 import { JwtRoleGuard } from 'src/common/guards/jwtrole.guard';
@@ -17,6 +17,7 @@ export class AdminController {
         private adminService: AdminService
     ) {}
 
+    // Genres SIDE
     @Post('/genres')
     async postGenre(@Body() request: GenreRequest): Promise<WebResponse<GenresResponse>> {
         const result = await this.adminService.postGenre(request)
@@ -53,4 +54,43 @@ export class AdminController {
             data: result
         }
     }
+
+    // Artists SIDE
+    @Post('/artists')
+    async postArtist(@Body() request: ArtistRequest): Promise<WebResponse<ArtistResponse>> {
+        const result = await this.adminService.postArtist(request)
+
+        return { data: result }
+    }
+
+    @Get('/artists')
+    async getArtist(@Req() req: Request): Promise<WebResponse<ArtistResponse[]>> {
+        const result = await this.adminService.getArtists()
+        this.logger.debug(req.user)
+
+        return {
+            data: result
+        }
+    }
+
+    @Patch('/artists/:id')
+    async updateArtist(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() request: UpdateArtistRequest
+    ): Promise<WebResponse<ArtistResponse>> {
+        request.id = id
+        const result = await this.adminService.updateArtist(request)
+
+        return {data: result}
+    }
+
+    @Delete('/artists/:id')
+    async deleteArtist(@Param('id', ParseIntPipe) id: number): Promise<WebResponse<boolean>> {
+        const result = await this.adminService.deleteArtist(id)
+
+        return {
+            data: result
+        }
+    }
+
 }
