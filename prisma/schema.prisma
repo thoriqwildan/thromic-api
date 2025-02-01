@@ -39,7 +39,7 @@ model Authors {
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
-  series            Series[]
+  series            AuthorSeries[]
 
   @@map("authors")
 }
@@ -50,7 +50,7 @@ model Genres {
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
-  series            Series[]
+  series            GenreSeries[]
 
   @@map("genres")
 }
@@ -61,7 +61,7 @@ model Artists {
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
-  series            Series[]
+  series            ArtistSeries[]
 
   @@map("artists")
 }
@@ -72,20 +72,46 @@ enum Types {
   MANHUA
 }
 
+model AuthorSeries {
+  author            Authors           @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  author_id         Int
+  series            Series            @relation(fields: [series_id], references: [id], onDelete: Cascade)
+  series_id         Int
+
+
+  @@id([author_id, series_id])
+}
+
+model ArtistSeries {
+  artist            Artists           @relation(fields: [artist_id], references: [id], onDelete: Cascade)
+  artist_id         Int
+  series            Series            @relation(fields: [series_id], references: [id], onDelete: Cascade)
+  series_id         Int
+
+
+  @@id([artist_id, series_id])
+}
+
+model GenreSeries {
+  genre             Genres            @relation(fields: [genre_id], references: [id], onDelete: Cascade)
+  genre_id         Int
+  series            Series            @relation(fields: [series_id], references: [id], onDelete: Cascade)
+  series_id         Int
+
+
+  @@id([genre_id, series_id])
+}
+
 model Series {
   id                Int             @id         @default(autoincrement())
   series_name       String          @db.VarChar(100)
-  cover_img         String          @default("http://localhost/uploads/cover/index.png")  @db.VarChar(255)
+  cover_img         String          @default("/uploads/cover/index.png")  @db.VarChar(255)
   description       String
   release           String          @db.VarChar(100)
-  author_id         Int
-  artist_id       Int
-  genre_id          Int             
+  author            AuthorSeries[]
+  artist            ArtistSeries[]
+  genre_id          GenreSeries[]            
   type              Types           @default(MANHWA)
-
-  author            Authors         @relation(fields: [author_id], references: [id])
-  artist            Artists         @relation(fields: [artist_id], references: [id])
-  genre             Genres          @relation(fields: [genre_id], references: [id])
 
   chapters          Chapters[]
   bookmarks         Bookmarks[]
