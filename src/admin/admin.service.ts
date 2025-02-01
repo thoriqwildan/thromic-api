@@ -1,11 +1,11 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
-import { Artists, Genres } from '@prisma/client';
+import { Artists, Authors, Genres } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { ArtistRequest, ArtistResponse, GenreRequest, GenresResponse, UpdateArtistRequest, UpdateGenreRequest } from 'src/model/admin.model';
+import { ArtistRequest, ArtistResponse, AuthorRequest, AuthorResponse, GenreRequest, GenresResponse, UpdateArtistRequest, UpdateAuthorRequest, UpdateGenreRequest } from 'src/model/admin.model';
 import { Logger } from 'winston';
-import { ArtistValidation, GenreValidation } from './admin.validation';
+import { ArtistValidation, AuthorValidation, GenreValidation } from './admin.validation';
 
 @Injectable()
 export class AdminService {
@@ -92,7 +92,7 @@ export class AdminService {
             where: { artist_name: artistRequest.name }
         })
 
-        if (sameArtist > 0) { throw new HttpException('Genre name has already exists', 400) }
+        if (sameArtist > 0) { throw new HttpException('Artist name has already exists', 400) }
 
         const data = await this.prismaService.artists.create({
             data: { artist_name: artistRequest.name }
@@ -133,6 +133,68 @@ export class AdminService {
 
         await this.prismaService.artists.delete({
             where: { id: artist_id }
+        })
+
+        return true
+    }
+
+    // Author SIDE
+    toAuthorResponse(data: Authors): AuthorResponse {
+        return {
+            id: data.id,
+            name: data.author_name,
+            created_at: data.created_at
+        }
+    }
+
+    async postAuthor(request: AuthorRequest): Promise<AuthorResponse> {
+        const authorRequest: AuthorRequest = this.validationService.validate(AuthorValidation.CREATE, request)
+        
+        const sameAuthor = await this.prismaService.authors.count({
+            where: { author_name: authorRequest.name }
+        })
+
+        if (sameAuthor > 0) { throw new HttpException('Author name has already exists', 400) }
+
+        const data = await this.prismaService.authors.create({
+            data: { author_name: authorRequest.name }
+        })
+
+        return this.toAuthorResponse(data)
+    }
+
+    async getAuthors(): Promise<AuthorResponse[]> {
+        const datas = await this.prismaService.authors.findMany()
+
+        return datas.map((data) => this.toAuthorResponse(data))
+    }
+
+    async updateAuthor(request: UpdateAuthorRequest): Promise<AuthorResponse> {
+        const updateRequest: UpdateAuthorRequest = this.validationService.validate(AuthorValidation.UPDATE, request)
+
+        const check_id = await this.prismaService.authors.findFirst({
+            where: {id: updateRequest.id}
+        })
+
+        if (!check_id) { throw new HttpException('Author not found', 404) }
+
+        const author = await this.prismaService.authors.update({
+            where: { id: updateRequest.id },
+            data: {author_name: updateRequest.name}
+        })
+
+        return this.toAuthorResponse(author)
+    } 
+
+    async deleteAuthor(author_id: number) {
+        const check_id = await this.prismaService.authors.findFirst({
+            where: {id: author_id}
+        })
+
+        if (!check_id) { throw new HttpException('Author not found', 404) }
+
+        await this.prismaService.authors.delete({
+            where: { id: author_id }
         })
 
         return true
