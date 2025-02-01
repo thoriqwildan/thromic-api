@@ -6,6 +6,8 @@ import { PrismaService } from './prisma.service';
 import { ValidationService } from './validation.service';
 import { APP_FILTER } from '@nestjs/core';
 import { ErrorFilter } from './error.filter';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRoleGuard } from './guards/jwtrole.guard';
 
 @Global()
 @Module({
@@ -25,7 +27,8 @@ import { ErrorFilter } from './error.filter';
         {
             provide: APP_FILTER,
             useClass: ErrorFilter
-        }
+        },
+        JwtStrategy
     ],
     exports: [PrismaService, ValidationService],
 })

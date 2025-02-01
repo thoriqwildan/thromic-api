@@ -34,7 +34,8 @@ model User {
 }
 
 model Authors {
-  author_name       String          @id         @db.VarChar(50)
+  id                Int             @id       @default(autoincrement())
+  author_name       String          @db.VarChar(50)
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
@@ -44,7 +45,8 @@ model Authors {
 }
 
 model Genres {
-  genre_name        String          @id         @db.VarChar(50)
+  id                Int             @id        @default(autoincrement())
+  genre_name        String          @db.VarChar(50)
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
@@ -54,7 +56,8 @@ model Genres {
 }
 
 model Artists {
-  artist_name       String          @id         @db.VarChar(50)
+  id                Int             @id        @default(autoincrement())
+  artist_name       String          @db.VarChar(50)
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
@@ -75,14 +78,14 @@ model Series {
   cover_img         String          @default("http://localhost/uploads/cover/index.png")  @db.VarChar(255)
   description       String
   release           String          @db.VarChar(100)
-  author_name       String          @db.VarChar(50)
-  artist_name       String          @db.VarChar(50)
-  genre_name        String          @db.VarChar(50)
+  author_id         Int
+  artist_id       Int
+  genre_id          Int             
   type              Types           @default(MANHWA)
 
-  author            Authors         @relation(fields: [author_name], references: [author_name])
-  artist            Artists         @relation(fields: [artist_name], references: [artist_name])
-  genre             Genres          @relation(fields: [genre_name], references: [genre_name])
+  author            Authors         @relation(fields: [author_id], references: [id])
+  artist            Artists         @relation(fields: [artist_id], references: [id])
+  genre             Genres          @relation(fields: [genre_id], references: [id])
 
   chapters          Chapters[]
   bookmarks         Bookmarks[]

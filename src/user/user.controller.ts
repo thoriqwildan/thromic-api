@@ -5,14 +5,14 @@ import { UserService } from './user.service';
 import { GetUserResponse, LoginUserRequest, RegisterUserRequest, RegisterUserResponse } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from './guards/jwt.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './roles.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from 'src/common/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer'
 import * as path from 'path';
 import * as fs from 'fs'
-import { promisify } from 'util'
+import { JwtRoleGuard } from 'src/common/guards/jwtrole.guard';
 
 @Controller('/api/user')
 export class UserController {
@@ -40,7 +40,7 @@ export class UserController {
     }   
 
     @Get('/profile')
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseGuards(JwtRoleGuard)
     @Roles('USER')
     async profile(@Req() req: Request): Promise<WebResponse<GetUserResponse>> {
         const result = await this.userService.get(req)
@@ -52,21 +52,21 @@ export class UserController {
     }
 
     @Put('/profile')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtRoleGuard)
     async update(@Req() req: Request): Promise<WebResponse<GetUserResponse>> {
         const result = await this.userService.put(req)
         return { data: result }
     }
 
     @Delete('/profile')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtRoleGuard)
     async logout(@Req() req: Request, @Res() res: Response) {
         res.clearCookie('access_token')
-        return res.send('Logout Successfully')
+        return res.json({data: 'Logout Successfully'})
     }
 
     @Post('/profile/upload')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtRoleGuard)
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
             destination: './uploads/profiles',
